@@ -64,10 +64,14 @@ jobs:
         run: |
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
-          scp -i private_key.pem ./cmd/cmd $SSH_USERNAME@$SSH_HOST:/c/Users/beVale/deploy/cmd
-          scp -i private_key.pem ./simulator/simulator $SSH_USERNAME@$SSH_HOST:/c/Users/beVale/deploy/simulator
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "pkill cmd || true"
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "pkill simulator || true"
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup /c/Users/beVale/deploy/simulator &"
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup /c/Users/beVale/deploy/cmd &"
+          # Передача файлов на удаленный сервер
+          scp -i private_key.pem ./cmd/cmd $SSH_USERNAME@$SSH_HOST:C:/Users/beVale/deploy/cmd.exe
+          scp -i private_key.pem ./simulator/simulator $SSH_USERNAME@$SSH_HOST:C:/Users/beVale/deploy/simulator.exe
+          # Остановка запущенных процессов
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "taskkill /IM cmd.exe /F || true"
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "taskkill /IM simulator.exe /F || true"
+          # Запуск новых процессов
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup C:/Users/beVale/deploy/simulator.exe &"
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup C:/Users/beVale/deploy/cmd.exe &"
+          # Удаление временного ключа
           rm private_key.pem
