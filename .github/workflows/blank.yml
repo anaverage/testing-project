@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,3 +34,40 @@ jobs:
           ./cmd &
           sleep 5
           pkill cmd
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.22.1'
+
+      - name: Build Simulator
+        working-directory: ./simulator
+        run: go build -o simulator main.go
+
+      - name: Build CMD
+        working-directory: ./cmd
+        run: go build -o cmd main.go
+
+      - name: Deploy to Server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          scp -i private_key.pem ./cmd/cmd $SSH_USERNAME@$SSH_HOST:/path/to/deploy/cmd
+          scp -i private_key.pem ./simulator/simulator $SSH_USERNAME@$SSH_HOST:/path/to/deploy/simulator
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "pkill cmd || true"
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "pkill simulator || true"
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup /path/to/deploy/simulator &"
+          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup /path/to/deploy/cmd &"
+          rm private_key.pem
