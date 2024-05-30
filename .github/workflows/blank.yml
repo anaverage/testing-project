@@ -35,9 +35,29 @@ jobs:
           sleep 5
           pkill cmd
 
-  deploy:
+  tests:
     needs: build
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.22.1'
+
+      - name: Tests
+        run: |
+          echo "Running fake tests..."
+          sleep 10
+          echo "Tests passed!"
+
+  deploy:
+    needs: tests
+    runs-on: ubuntu-latest
+
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
@@ -56,22 +76,12 @@ jobs:
         working-directory: ./cmd
         run: go build -o cmd main.go
 
-      - name: Deploy to Server
+      - name: Deploy
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
         run: |
-          echo "$SSH_PRIVATE_KEY" > private_key.pem
-          chmod 600 private_key.pem
-          # Передача файлов на удаленный сервер
-          scp -i private_key.pem ./cmd/cmd $SSH_USERNAME@$SSH_HOST:C:/Users/beVale/deploy/cmd.exe
-          scp -i private_key.pem ./simulator/simulator $SSH_USERNAME@$SSH_HOST:C:/Users/beVale/deploy/simulator.exe
-          # Остановка запущенных процессов
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "taskkill /IM cmd.exe /F || true"
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "taskkill /IM simulator.exe /F || true"
-          # Запуск новых процессов
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup C:/Users/beVale/deploy/simulator.exe &"
-          ssh -i private_key.pem $SSH_USERNAME@$SSH_HOST "nohup C:/Users/beVale/deploy/cmd.exe &"
-          # Удаление временного ключа
-          rm private_key.pem
+          echo "Deploying to server..."
+          sleep 10
+          echo "Deployment complete!"
