@@ -51,6 +51,7 @@ jobs:
       - name: Deploy to Test Server
         run: |
           echo "Deploying to server..."
+          sleep 10
           docker ps
           echo "Deployment to test server complete!"
           
