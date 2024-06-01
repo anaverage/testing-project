@@ -48,8 +48,13 @@ jobs:
 
     if: github.ref == 'refs/heads/main'
     steps:
+      - name: List files in current directory
+        run: ls
+        working-directory: ./
+
       - name: Deploy to Test Server
         run: |
           echo "Deploying to test server..."
           docker-compose -f docker-compose.yml up -d
           echo "Deployment to test server complete!"
+  
