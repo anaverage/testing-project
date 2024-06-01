@@ -24,5 +24,8 @@ jobs:
       - name: List files in host directory
         run: docker run --rm -v $(pwd):/host alpine ls -la /host
 
+      - name: Display contents of docker-compose.yml
+        run: cat /host/docker-compose.yml
+
       - name: Deploy with Docker Compose
         run: docker-compose -f /host/docker-compose.yml up -d
