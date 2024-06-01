@@ -51,5 +51,5 @@ jobs:
       - name: Deploy to Test Server
         run: |
           echo "Deploying to test server..."
-          docker-compose up -d
+          docker-compose -f docker-compose.yml up -d
           echo "Deployment to test server complete!"
