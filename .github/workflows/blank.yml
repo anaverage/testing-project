@@ -21,12 +21,8 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-image .
 
-      # Run a temporary container with the mounted volume to list files in the host
       - name: List files in host directory
         run: docker run --rm -v $(pwd):/host alpine ls -la /host
 
-      # Here you should be able to find the path to docker-compose.yml on the host
-      # Update the next step accordingly
-
       - name: Deploy with Docker Compose
-        run: docker-compose -f /path/to/docker-compose.yml up -d
+        run: docker-compose -f /host/docker-compose.yml up -d
