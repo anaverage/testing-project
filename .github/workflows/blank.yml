@@ -28,7 +28,7 @@ jobs:
         working-directory: ./cmd
         run: go build -o cmd main.go
 
-      - name: Run CMD (short test)
+      - name: Run CMD
         working-directory: ./cmd
         run: |
           ./cmd &
@@ -50,8 +50,8 @@ jobs:
 
       - name: Tests
         run: |
-          echo "Running fake tests..."
-          sleep 10
+          echo "Running tests..."
+          go test -v ./tests/...
           echo "Tests passed!"
 
   deploy:
